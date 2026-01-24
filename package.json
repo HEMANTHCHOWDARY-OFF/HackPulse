@@ -1,0 +1,17 @@
+{
+  "name": "hackpulse",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "gsap": "^3.14.2",
+    "ogl": "^1.0.11",
+    "three": "^0.182.0"
+  }
+}

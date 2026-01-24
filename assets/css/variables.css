@@ -1,0 +1,69 @@
+:root {
+    /* Base Colors - Deep & Rich */
+    --bg-dark: #030008;
+    /* Darker, richer purple-black */
+    --bg-card: rgba(20, 10, 30, 0.6);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+
+    /* Primary Gradient - More Vibrant */
+    --primary-gradient: linear-gradient(135deg, #7000FF 0%, #E200C4 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #892cdc 0%, #ff2da4 100%);
+    --text-gradient: linear-gradient(135deg, #FFFFFF 0%, #E0B0FF 100%);
+
+    /* Functional Colors */
+    --text-main: #FFFFFF;
+    --text-muted: #A39AB5;
+    --text-placeholder: rgba(255, 255, 255, 0.3);
+
+    /* Glassmorphism System */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shine: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+
+    /* Accents */
+    --color-purple: #7000FF;
+    --color-pink: #E200C4;
+    --color-blue: #00D4FF;
+    --color-success: #00FF94;
+
+    /* Typography */
+    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Spacing & Layout */
+    --container-width: 1200px;
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    /* Animations */
+    --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme="light"] {
+    /* Light Mode Overrides */
+    --bg-dark: #FFFFFF;
+    /* Pure white */
+    --bg-card: #E5E5EA;
+    /* Darker gray for contrast */
+    --bg-card-hover: #D1D1D6;
+
+    /* Functional Colors */
+    --text-main: #000000;
+    /* Pure black text */
+    --text-muted: #555555;
+    /* Darker muted text */
+    --text-placeholder: rgba(0, 0, 0, 0.5);
+
+    /* Glassmorphism System */
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(0, 0, 0, 0.15);
+    /* Stronger border */
+    --glass-shine: rgba(255, 255, 255, 1);
+    --glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    /* Stronger shadow */
+
+    /* Gradients can stay similar or be adjusted if too bright */
+}

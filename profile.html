@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | HackPulse</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/LiquidEther.css">
+    <link rel="stylesheet" href="assets/css/MagicBento.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-code text-gradient"></i>
+                <span>HACK<span class="text-gradient">PULSE</span></span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="hackathons.html">Hackathons</a></li>
+                    <li><a href="winners.html">Winners</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="profile.html" class="active">Profile</a></li>
+                </ul>
+            </nav>
+            <button id="theme-toggle" class="btn-icon"
+                style="background: transparent; border: 1px solid var(--border-glass); color: var(--text-muted); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem; transition: all 0.3s;">
+                <i class="fas fa-sun"></i>
+            </button>
+            <button class="btn-primary"
+                onclick="sessionStorage.removeItem('authToken'); window.location.href='login.html'">Logout</button>
+        </div>
+    </header>
+
+    <!-- Profile Section -->
+    <section class="container fade-in" style="padding-top: 120px; max-width: 800px;">
+        <div class="glass-card" style="padding: 40px;">
+            <div class="profile-header">
+                <img src="https://i.pravatar.cc/150?u=me" alt="My Profile" class="profile-avatar"
+                    style="width: 120px; height: 120px;">
+                <div>
+                    <h2 id="profile-name" style="font-size: 2rem;">Loading...</h2>
+                    <span class="text-gradient" id="profile-role" style="font-size: 1.2rem;">Loading...</span>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-box">
+                    <h3 id="stat-hackathons">0</h3>
+                    <span>Hackathons</span>
+                </div>
+                <div class="stat-box">
+                    <h3 id="stat-wins">0</h3>
+                    <span>Wins</span>
+                </div>
+                <div class="stat-box">
+                    <h3 id="stat-projects">0</h3>
+                    <span>Projects</span>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Skills</h3>
+                <div class="tags" id="profile-skills">
+                    <!-- Skills -->
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h3>Achievements</h3>
+                <ul class="achievements-list" id="profile-achievements">
+                    <!-- Achievements -->
+                </ul>
+            </div>
+        </div>
+    </section>
+
+
+
+
+    <script src="assets/js/MagicBento.js"></script>
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | HackPulse</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="liquid-ether-bg"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;">
+    </div>
+
+    <div class="auth-wrapper">
+        <!-- Left Side: Visuals -->
+        <div class="auth-visuals">
+            <!-- Removed container from here -->
+            <div class="visual-content">
+                <a href="index.html" class="logo-large">
+                    <i class="fas fa-code text-gradient"></i>
+                    <span>HACK<span class="text-gradient">PULSE</span></span>
+                </a>
+                <p class="tagline">Where Ideas Turn Into Reality. Join the community of innovators.</p>
+            </div>
+        </div>
+
+        <!-- Right Side: Form -->
+        <div class="auth-form-container">
+            <div class="glass-card-form fade-in">
+                <div class="auth-header">
+                    <h2>Create Account</h2>
+                    <p>Join the community of innovators</p>
+                </div>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="fullname">Full Name</label>
+                        <input type="text" id="fullname" class="form-input" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-input" placeholder="name@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password</label>
+                        <input type="password" id="confirm-password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Sign Up</button>
+                </form>
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orb Animation -->
+    <link rel="stylesheet" href="assets/css/Orb.css">
+    <script src="assets/js/ogl.umd.js"></script>
+    <script src="assets/js/Orb.js"></script>
+    <script>
+        const container = document.getElementById('liquid-ether-bg');
+        if (container && window.initOrb) {
+            window.initOrb(container, {
+                hue: 0,
+                hoverIntensity: 2,
+                rotateOnHover: true,
+                forceHoverState: false,
+                backgroundColor: '#000000'
+            });
+        }
+    </script>
+
+    <!-- Auth Logic -->
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            // Simulate successful signup
+            sessionStorage.setItem('authToken', 'true');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+
+</html>
