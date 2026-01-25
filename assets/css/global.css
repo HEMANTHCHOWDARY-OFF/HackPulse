@@ -8,14 +8,20 @@
 
 body {
     font-family: var(--font-main);
-    background-color: var(--bg-dark);
+    background-color: transparent;
+    /* Allows #lights to show in Dark Mode */
     color: var(--text-main);
     line-height: 1.6;
     overflow-x: hidden;
-    background-image:
+    /* background-image:
         radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.15) 0%, transparent 40%);
+        radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.15) 0%, transparent 40%); */
     min-height: 100vh;
+}
+
+/* Force opaque white background in Light Mode to hide #lights */
+:root[data-theme="light"] body {
+    background-color: #FFFFFF;
 }
 
 a {

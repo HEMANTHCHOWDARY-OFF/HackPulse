@@ -2,7 +2,7 @@
     /* Base Colors - Deep & Rich */
     --bg-dark: #030008;
     /* Darker, richer purple-black */
-    --bg-card: rgba(20, 10, 30, 0.6);
+    --bg-card: rgba(20, 10, 30, 0.85);
     --bg-card-hover: rgba(255, 255, 255, 0.08);
 
     /* Primary Gradient - More Vibrant */
@@ -28,7 +28,10 @@
     --color-success: #00FF94;
 
     /* Typography */
-    --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-main: 'Inter',
+        system-ui,
+        -apple-system,
+        sans-serif;
 
     /* Spacing & Layout */
     --container-width: 1200px;

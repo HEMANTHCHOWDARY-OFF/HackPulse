@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperspeed Test</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #lights {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://esm.sh/three@0.160.0",
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="lights"></div>
+    <script type="module">
+        import { Hyperspeed, hyperspeedPresets } from './assets/js/Hyperspeed.js';
+
+        console.log('Test Script Running');
+        try {
+            const container = document.getElementById('lights');
+            const options = hyperspeedPresets.one;
+            console.log('Initializing Hyperspeed with options:', options);
+            const app = new Hyperspeed(container, options);
+            console.log('Hyperspeed initialized');
+        } catch (e) {
+            console.error('Hyperspeed failed:', e);
+            document.body.innerHTML += `<div style="color:red; z-index:100; position:absolute; top:10px;">Error: ${e.message}</div>`;
+        }
+    </script>
+</body>
+
+</html>

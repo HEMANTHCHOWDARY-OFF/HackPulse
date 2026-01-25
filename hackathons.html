@@ -10,15 +10,25 @@
     <link rel="stylesheet" href="assets/css/global.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/Hyperspeed.css">
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/LiquidEther.css">
     <link rel="stylesheet" href="assets/css/MagicBento.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://esm.sh/three@0.160.0",
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three"
+            }
+        }
+    </script>
 </head>
 
 <body>
+    <div id="lights"></div>
 
     <!-- Header -->
     <header>
@@ -74,6 +84,41 @@
     <script src="assets/js/MagicBento.js"></script>
     <script src="assets/js/data.js"></script>
     <script src="assets/js/main.js"></script>
+
+    <script type="module">
+        import { Hyperspeed, hyperspeedPresets } from './assets/js/Hyperspeed.js';
+
+        const container = document.getElementById('lights');
+        let options = hyperspeedPresets.two;
+
+        // Check for Light Mode
+        const theme = localStorage.getItem('theme') || 'dark';
+        if (theme === 'light') {
+            options = {
+                ...options,
+                colors: {
+                    roadColor: 0xeeeeee,
+                    islandColor: 0xffffff,
+                    background: 0xffffff,
+                    shoulderLines: 0xcccccc,
+                    brokenLines: 0xaaaaaa,
+                    leftCars: [0xff102a, 0xeb383e, 0xff102a],
+                    rightCars: [0xdadafa, 0xbebae3, 0x8f97e4],
+                    sticks: 0xdadafa
+                }
+            };
+        }
+
+        const hyperspeed = new Hyperspeed(container, options);
+
+        // Reload on theme toggle to update animation
+        const toggle = document.getElementById('theme-toggle');
+        if (toggle) {
+            toggle.addEventListener('click', () => {
+                setTimeout(() => window.location.reload(), 100);
+            });
+        }
+    </script>
 </body>
 
 </html>
