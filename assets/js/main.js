@@ -7,41 +7,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log("HackPulse Initialized");
 
     // Auth State Listener
+    // Auth State Listener
     onAuthStateChanged(auth, async (user) => {
+        const loader = document.getElementById('auth-loader');
+
         if (user) {
             console.log("User is signed in:", user.uid);
             await loadUserProfile(user.uid);
+
+            // Allow entry - fade out loader
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            }
         } else {
             console.log("User is signed out");
             // Redirect to login if not on a public page (or if we want to enforce login for index)
-            // For this app, let's enforce login for index.html as well since it was the original intent
             const path = window.location.pathname;
-            if (!path.includes('login.html') && !path.includes('signup.html')) {
+            const isPublicPage = path.includes('login.html') || path.includes('signup.html');
+
+            if (!isPublicPage) {
+                // Keep loader visible while redirecting to prevent flash of content
                 window.location.href = 'login.html';
+            } else {
+                if (loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 500);
+                }
             }
         }
     });
 
     // Theme Logic
-    const initTheme = () => {
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
-    };
+    // Theme is now initialized in init-theme.js to prevent flash
+    // We only need to handle the toggle button here
 
-    const updateThemeIcon = (theme) => {
-        const toggleBtn = document.getElementById('theme-toggle');
-        if (toggleBtn) {
-            const icon = toggleBtn.querySelector('i');
-            if (theme === 'light') {
-                icon.className = 'fas fa-moon';
-            } else {
-                icon.className = 'fas fa-sun';
-            }
-        }
-    };
-
-    initTheme();
+    // Ensure icon matches current theme on load
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    updateThemeIcon(currentTheme);
 
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {

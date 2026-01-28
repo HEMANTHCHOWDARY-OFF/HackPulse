@@ -34,6 +34,7 @@
     <div id="liquid-ether-bg" class="liquid-ether-container"
         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;"></div>
     <script src="./assets/js/LiquidEther.js"></script>
+    <script src="./assets/js/init-theme.js"></script>
     <script>
         const container = document.getElementById('liquid-ether-bg');
         if (window.initLiquidEther) {
@@ -44,6 +45,15 @@
             });
         }
     </script>
+
+    <!-- Auth Loading Overlay -->
+    <div id="auth-loader"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-dark); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease;">
+        <div class="loader-content" style="text-align: center;">
+            <i class="fas fa-circle-notch fa-spin text-gradient" style="font-size: 3rem;"></i>
+            <h2 style="margin-top: 1rem; color: var(--text-main);">Loading HackPulse...</h2>
+        </div>
+    </div>
 
     <!-- Header -->
     <header>
