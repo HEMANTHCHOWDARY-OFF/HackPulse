@@ -1,4 +1,4 @@
-import { config } from './config.js';
+// import { config } from './config.js'; // Removed for dynamic import support
 
 const SYSTEM_PROMPT = `You are an expert API that returns data in strict JSON format. 
 Do not include any explanation, markdown formatting (like \`\`\`json), or conversational text. 
@@ -9,9 +9,52 @@ Return ONLY the JSON array.`;
  * @param {string} prompt 
  * @returns {Promise<any>}
  */
+/**
+ * Fetch data from Groq API
+ * Supports both Vercel Serverless (Production) and Local Config (Development)
+ * @param {string} prompt 
+ * @returns {Promise<any>}
+ */
 async function fetchFromGroq(prompt) {
-    if (!config.GROQ_API_KEY) {
-        console.error("Groq API Key missing");
+    const payload = {
+        model: "llama-3.3-70b-versatile",
+        messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: prompt }
+        ],
+        response_format: { "type": "json_object" },
+        temperature: 0.3,
+        max_tokens: 1024
+    };
+
+    // 1. Try Vercel Serverless Function (Production Secure Way)
+    try {
+        const proxyResponse = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (proxyResponse.ok) {
+            const data = await proxyResponse.json();
+            return JSON.parse(data.choices[0].message.content);
+        }
+    } catch (e) {
+        console.log("Serverless proxy not available, trying local config...");
+    }
+
+    // 2. Fallback: Local Development (Direct Client-Side Call)
+    // Dynamic import to avoid build errors if config.js is missing
+    let apiKey = null;
+    try {
+        const module = await import('./config.js');
+        apiKey = module.config.GROQ_API_KEY;
+    } catch (e) {
+        console.warn("Local config.js not found.");
+    }
+
+    if (!apiKey) {
+        console.error("Groq API Key missing in both Server and Local Config.");
         return [];
     }
 
@@ -19,34 +62,23 @@ async function fetchFromGroq(prompt) {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${config.GROQ_API_KEY}`,
+                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile", // Valid Groq model
-                messages: [
-                    { role: "system", content: SYSTEM_PROMPT },
-                    { role: "user", content: prompt }
-                ],
-                response_format: { "type": "json_object" }, // Crucial for valid JSON
-                temperature: 0.3,
-                max_tokens: 1024
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
             const errText = await response.text();
-            console.error("Groq API Error Details:", errText);
             throw new Error(`API Error: ${response.status} - ${errText}`);
         }
 
         const data = await response.json();
-        let content = data.choices[0].message.content;
+        return JSON.parse(data.choices[0].message.content);
 
-        return JSON.parse(content);
     } catch (error) {
-        console.error("Error fetching from Groq:", error);
-        throw error; // Re-throw to handle in UI
+        console.error("Error fetching from Groq (Fallback):", error);
+        throw error;
     }
 }
 
