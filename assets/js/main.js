@@ -40,7 +40,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Theme Logic
     // Theme is now initialized in init-theme.js to prevent flash
-    // We only need to handle the toggle button here
+
+    const updateThemeIcon = (theme) => {
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+            const icon = toggleBtn.querySelector('i');
+            if (theme === 'light') {
+                icon.className = 'fas fa-moon';
+            } else {
+                icon.className = 'fas fa-sun';
+            }
+        }
+    };
 
     // Ensure icon matches current theme on load
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';

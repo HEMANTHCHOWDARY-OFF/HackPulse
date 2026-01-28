@@ -3,7 +3,16 @@
 
 (function () {
     try {
-        const savedTheme = localStorage.getItem('theme') || 'light';
+        const path = window.location.pathname;
+        const isAuthPage = path.includes('login') || path.includes('signup');
+
+        let savedTheme = localStorage.getItem('theme') || 'light';
+
+        // Force dark mode for auth pages
+        if (isAuthPage) {
+            savedTheme = 'dark';
+        }
+
         document.documentElement.setAttribute('data-theme', savedTheme);
 
         // Prevent transition flash
