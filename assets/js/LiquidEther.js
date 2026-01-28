@@ -23,9 +23,9 @@ window.initLiquidEther = function (container, options = {}) {
     let mountRef = container;
     let webglRef = null;
     let resizeObserverRef = null;
-    let rafRef = null;
+    let rafRef = { current: null };
     let intersectionObserverRef = null;
-    let isVisibleRef = true;
+    let isVisibleRef = { current: true };
     let resizeRafRef = null;
 
     function makePaletteTexture(stops) {
@@ -1027,7 +1027,7 @@ gl_Position = vec4(pos, 1.0);
         entries => {
             const entry = entries[0];
             const isVisible = entry.isIntersecting && entry.intersectionRatio > 0;
-            isVisibleRef = isVisible;
+            isVisibleRef.current = isVisible;
             if (!webglRef) return;
             if (isVisible && !document.hidden) {
                 webglRef.start();
@@ -1053,7 +1053,7 @@ gl_Position = vec4(pos, 1.0);
 
     return {
         dispose: () => {
-            if (rafRef) cancelAnimationFrame(rafRef);
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
             if (resizeObserverRef) {
                 try {
                     resizeObserverRef.disconnect();

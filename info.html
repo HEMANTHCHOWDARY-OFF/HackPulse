@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Info | HackPulse</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/Hyperspeed.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/LiquidEther.css">
+    <link rel="stylesheet" href="assets/css/MagicBento.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://esm.sh/three@0.160.0",
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three",
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+            }
+        }
+    </script>
+    <script type="module" src="assets/js/firebase.js"></script>
+</head>
+
+<body>
+    <div id="lights"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-code text-gradient"></i>
+                <span>HACK<span class="text-gradient">PULSE</span></span>
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="hackathons.html">Hackathons</a></li>
+                    <li><a href="winners.html">Winners</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="info.html" class="active">Info</a></li>
+                    <li><a href="messages.html">Messages</a></li>
+                    <li><a href="profile.html">Profile</a></li>
+                </ul>
+            </nav>
+            <button id="theme-toggle" class="btn-icon"
+                style="background: transparent; border: 1px solid var(--border-glass); color: var(--text-muted); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem; transition: all 0.3s;">
+                <i class="fas fa-sun"></i>
+            </button>
+            <button class="btn-primary"
+                onclick="sessionStorage.removeItem('authToken'); window.location.href='login.html'">Logout</button>
+        </div>
+    </header>
+
+    <!-- Info Section -->
+    <section id="info" style="padding-top: 120px;">
+        <div class="container">
+            <div class="section-title fade-in">
+                <i class="fas fa-info-circle text-gradient"></i>
+                <h2>Connection <span class="text-gradient">Center</span></h2>
+            </div>
+
+            <div style="display: grid; gap: 40px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+                <!-- Incoming Requests -->
+                <div class="magic-bento-card fade-in">
+                    <h3
+                        style="margin-bottom: 20px; border-bottom: 1px solid var(--border-glass); padding-bottom: 10px;">
+                        <i class="fas fa-arrow-down text-gradient" style="margin-right: 10px;"></i>
+                        Incoming Requests
+                    </h3>
+                    <div id="incoming-requests" style="min-height: 200px;">
+                        <div class="loading">Loading requests...</div>
+                    </div>
+                </div>
+
+                <!-- Sent Requests -->
+                <div class="magic-bento-card fade-in">
+                    <h3
+                        style="margin-bottom: 20px; border-bottom: 1px solid var(--border-glass); padding-bottom: 10px;">
+                        <i class="fas fa-paper-plane text-gradient" style="margin-right: 10px;"></i>
+                        Sent Requests
+                    </h3>
+                    <div id="sent-requests" style="min-height: 200px;">
+                        <div class="loading">Loading requests...</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <script src="assets/js/MagicBento.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
+
+    <!-- Info Page Logic -->
+    <script type="module">
+        import { auth, db } from './assets/js/firebase.js';
+        import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
+
+        async function loadRequests() {
+            const incomingContainer = document.getElementById('incoming-requests');
+            const sentContainer = document.getElementById('sent-requests');
+
+            try {
+                await auth.authStateReady();
+                const user = auth.currentUser;
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Fetch Incoming (to == me, status == pending)
+                const incomingQuery = query(collection(db, "requests"), where("to", "==", user.uid), where("status", "==", "pending"));
+                const incomingSnap = await getDocs(incomingQuery);
+
+                if (incomingSnap.empty) {
+                    incomingContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No incoming requests</div>';
+                } else {
+                    incomingContainer.innerHTML = '';
+                    const seenSenders = new Set();
+
+                    for (const reqDoc of incomingSnap.docs) {
+                        const req = reqDoc.data();
+
+                        // Deduplicate
+                        if (seenSenders.has(req.from)) continue;
+                        seenSenders.add(req.from);
+
+                        // Fetch sender info
+                        const senderSnap = await getDoc(doc(db, "users", req.from));
+                        const sender = senderSnap.exists() ? senderSnap.data() : { name: "Unknown" };
+
+                        const item = document.createElement('div');
+                        item.className = "request-item";
+                        item.style.cssText = "display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--border-glass); gap: 10px;";
+                        item.innerHTML = `
+                            <div>
+                                <strong style="display: block; font-size: 1.1rem;">${sender.name}</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">${sender.role || 'Member'}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-primary" onclick="window.handleRequest('${reqDoc.id}', 'accepted')" style="padding: 5px 15px; font-size: 0.8rem;">Accept</button>
+                                <button class="btn-glass-sm" onclick="window.handleRequest('${reqDoc.id}', 'rejected')" style="padding: 5px 15px; font-size: 0.8rem; background: rgba(255,50,50,0.2);">Decline</button>
+                            </div>
+                        `;
+                        incomingContainer.appendChild(item);
+                    }
+                }
+
+                // Fetch Sent (from == me, status == pending)
+                const sentQuery = query(collection(db, "requests"), where("from", "==", user.uid), where("status", "==", "pending"));
+                const sentSnap = await getDocs(sentQuery);
+
+                if (sentSnap.empty) {
+                    sentContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No outgoing pending requests</div>';
+                } else {
+                    sentContainer.innerHTML = '';
+                    const seenReceivers = new Set();
+
+                    for (const reqDoc of sentSnap.docs) {
+                        const req = reqDoc.data();
+
+                        // Deduplicate: If we already showed a request to this person, skip
+                        if (seenReceivers.has(req.to)) continue;
+                        seenReceivers.add(req.to);
+
+                        // Fetch receiver info
+                        const receiverSnap = await getDoc(doc(db, "users", req.to));
+                        const receiver = receiverSnap.exists() ? receiverSnap.data() : { name: "Unknown" };
+
+                        const item = document.createElement('div');
+                        item.style.cssText = "padding: 15px; border-bottom: 1px solid var(--border-glass); color: var(--text-muted);";
+                        item.innerHTML = `Running request to <strong>${receiver.name}</strong>`;
+                        sentContainer.appendChild(item);
+                    }
+                }
+
+            } catch (e) {
+                console.error(e);
+                incomingContainer.innerHTML = '<div class="error">Error loading requests</div>';
+            }
+        }
+
+        window.handleRequest = async (docId, status) => {
+            try {
+                await updateDoc(doc(db, "requests", docId), { status: status });
+                loadRequests(); // Reload
+            } catch (e) { console.error(e); alert("Action failed"); }
+        };
+
+        loadRequests();
+    </script>
+
+    <script type="module">
+        import { Hyperspeed, hyperspeedPresets } from './assets/js/Hyperspeed.js';
+        const container = document.getElementById('lights');
+        const options = hyperspeedPresets.one;
+        const hyperspeed = new Hyperspeed(container, options);
+    </script>
+</body>
+
+</html>

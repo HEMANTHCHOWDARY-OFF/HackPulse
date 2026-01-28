@@ -21,10 +21,15 @@
         {
             "imports": {
                 "three": "https://esm.sh/three@0.160.0",
-                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three"
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three",
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
             }
         }
     </script>
+    <script type="module" src="assets/js/firebase.js"></script>
 </head>
 
 <body>
@@ -43,6 +48,8 @@
                     <li><a href="hackathons.html">Hackathons</a></li>
                     <li><a href="winners.html" class="active">Winners</a></li>
                     <li><a href="team.html">Team</a></li>
+                    <li><a href="info.html">Info</a></li>
+                    <li><a href="messages.html">Messages</a></li>
                     <li><a href="profile.html">Profile</a></li>
                 </ul>
             </nav>
@@ -73,8 +80,11 @@
 
 
     <script src="assets/js/MagicBento.js"></script>
-    <script src="assets/js/data.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
+    <script type="module">
+        import { loadWinners } from './assets/js/hackathonService.js?v=2';
+        loadWinners();
+    </script>
 
     <script type="module">
         import { Hyperspeed, hyperspeedPresets } from './assets/js/Hyperspeed.js';

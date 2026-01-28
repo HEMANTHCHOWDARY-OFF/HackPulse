@@ -21,10 +21,15 @@
         {
             "imports": {
                 "three": "https://esm.sh/three@0.160.0",
-                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three"
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three",
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
             }
         }
     </script>
+    <script type="module" src="assets/js/firebase.js"></script>
 </head>
 
 <body>
@@ -43,6 +48,8 @@
                     <li><a href="hackathons.html">Hackathons</a></li>
                     <li><a href="winners.html">Winners</a></li>
                     <li><a href="team.html" class="active">Team</a></li>
+                    <li><a href="info.html">Info</a></li>
+                    <li><a href="messages.html">Messages</a></li>
                     <li><a href="profile.html">Profile</a></li>
                 </ul>
             </nav>
@@ -63,6 +70,14 @@
                 <h2>Find Your <span class="text-gradient">Dream Team</span></h2>
             </div>
 
+            <!-- Search Bar -->
+            <div class="search-container fade-in" style="max-width: 600px; margin: 0 auto 40px; position: relative;">
+                <input type="text" id="team-search" placeholder="Search by name, role, or skill..."
+                    style="width: 100%; padding: 15px 50px 15px 25px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-glass); border-radius: 30px; color: var(--text-main); font-size: 1rem; outline: none; transition: all 0.3s;">
+                <i class="fas fa-search"
+                    style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            </div>
+
             <div id="team-grid" class="team-grid">
                 <!-- Javascript will populate this -->
             </div>
@@ -71,8 +86,11 @@
 
 
     <script src="assets/js/MagicBento.js"></script>
-    <script src="assets/js/data.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
+    <script type="module">
+        import { loadTeamMembers } from './assets/js/teamService.js';
+        loadTeamMembers();
+    </script>
 
     <script type="module">
         import { Hyperspeed, hyperspeedPresets } from './assets/js/Hyperspeed.js';

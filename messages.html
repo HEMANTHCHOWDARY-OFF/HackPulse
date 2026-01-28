@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages | HackPulse</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/global.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="stylesheet" href="assets/css/Hyperspeed.css">
+    <link rel="stylesheet" href="assets/css/MagicBento.css">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/LiquidEther.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://esm.sh/three@0.160.0",
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three",
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+            }
+        }
+    </script>
+    <script type="module" src="assets/js/firebase.js"></script>
+    <style>
+        .chat-layout {
+            position: relative;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: calc(100vh - 140px);
+        }
+
+        .chat-list {
+            /* Inherits magic-bento-card styles */
+            overflow-y: auto;
+            padding: 10px;
+            /* Override aspect-ratio from card class if needed */
+            aspect-ratio: auto;
+            min-height: auto;
+            justify-content: flex-start;
+            gap: 10px;
+        }
+
+        .chat-window {
+            /* Inherits magic-bento-card styles */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            aspect-ratio: auto;
+            min-height: auto;
+        }
+
+        .chat-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-glass);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-item:hover,
+        .chat-item.active {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .chat-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-window {
+                display: none;
+            }
+
+            /* Simplified mobile view logic needed usually */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(132, 0, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(132, 0, 255, 0.8);
+        }
+
+        /* Generated Chat Bubble Styles */
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-bubble.sent {
+            align-self: flex-end;
+            background: var(--color-purple);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-bubble.received {
+            align-self: flex-start;
+            background: var(--bg-card-hover);
+            color: var(--text-main);
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-time {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            align-self: flex-end;
+            opacity: 0.7;
+        }
+
+        /* Specific overrides for Light Mode to ensure black text */
+        :root[data-theme="light"] .chat-bubble.received {
+            background: #e0e0e0;
+            color: #000000;
+        }
+
+        /* Ensure sent messages are always visible */
+        :root[data-theme="light"] .chat-bubble.sent {
+            color: white;
+            /* Keep white on purple */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="lights"></div>
+    <!-- Header -->
+    <header>
+        <div class="container"><a href="index.html" class="logo"><i
+                    class="fas fa-code text-gradient"></i><span>HACK<span class="text-gradient">PULSE</span></span></a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="hackathons.html">Hackathons</a></li>
+                    <li><a href="winners.html">Winners</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="info.html">Info</a></li>
+                    <li><a href="messages.html" class="active">Messages</a></li>
+                    <li><a href="profile.html">Profile</a></li>
+                </ul>
+            </nav><button id="theme-toggle" class="btn-icon"
+                style="background: transparent; border: 1px solid var(--border-glass); color: var(--text-muted); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 1.2rem; transition: all 0.3s;"><i
+                    class="fas fa-sun"></i></button><button class="btn-primary"
+                onclick="sessionStorage.removeItem('authToken'); window.location.href='login.html'">Logout</button>
+        </div>
+    </header>
+    <!-- Info Section -->
+    <section id="messages" style="padding-top: 100px;">
+        <div class="container">
+            <div class="chat-layout fade-in">
+                <!-- Chat List -->
+                <div class="chat-list magic-bento-card" id="chat-list">
+                    <div class="loading" style="padding: 20px;">Loading chats...</div>
+                </div>
+                <!-- Chat Window -->
+                <div class="chat-window magic-bento-card" id="chat-window"><i class="fas fa-comments"
+                        style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h3>Select a conversation</h3>
+                    <p>Start interacting by connecting with others in the Team section.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script type="module" src="assets/js/main.js"></script>
+    < !-- Messages Logic -->
+        <script type="module">import {
+                auth,
+                db
+            }
+
+                from './assets/js/firebase.js';
+
+            import {
+                collection,
+                query,
+                where,
+                getDocs,
+                doc,
+                getDoc,
+                addDoc,
+                onSnapshot,
+                orderBy,
+                serverTimestamp
+            }
+
+                from "firebase/firestore";
+
+            let unsubscribe = null; // To stop listening when switching chats
+
+            async function loadChats() {
+                const listContainer = document.getElementById('chat-list');
+
+                try {
+                    await auth.authStateReady();
+                    const user = auth.currentUser;
+
+                    if (!user) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    // Query accepted requests
+                    const q1 = query(collection(db, "requests"), where("from", "==", user.uid), where("status", "==", "accepted"));
+                    const q2 = query(collection(db, "requests"), where("to", "==", user.uid), where("status", "==", "accepted"));
+
+                    const [snap1,
+                        snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+                    const matches = [];
+
+                    snap1.forEach(d => matches.push({
+                        ...d.data(), partnerId: d.data().to
+                    }));
+
+                    snap2.forEach(d => matches.push({
+                        ...d.data(), partnerId: d.data().from
+                    }));
+
+                    if (matches.length === 0) {
+                        listContainer.innerHTML = ` <div style="text-align: center; padding: 20px; color: var(--text-muted);"><p>No active chats.</p><a href="team.html" style="color: var(--color-blue); font-size: 0.9rem;">Find people to connect with</a></div>`;
+                        return;
+                    }
+
+                    listContainer.innerHTML = '';
+                    const seenPartners = new Set();
+
+                    for (const match of matches) {
+                        if (seenPartners.has(match.partnerId)) continue;
+                        seenPartners.add(match.partnerId);
+
+                        const partnerSnap = await getDoc(doc(db, "users", match.partnerId));
+
+                        const partner = partnerSnap.exists() ? partnerSnap.data() : {
+                            name: "Unknown User"
+                        }
+
+                            ;
+                        const avatar = partner.avatar || `https: //i.pravatar.cc/150?u=${match.partnerId}`;
+
+                        const el = document.createElement('div');
+                        el.className = 'chat-item';
+
+                        el.innerHTML = ` 
+                            <img src="${avatar}" style="width: 40px; height: 40px; border-radius: 50%;">
+                            <div>
+                                <h4 style="margin: 0; font-size: 0.95rem;">${partner.name}</h4>
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Click to chat</span>
+                            </div>`;
+                        el.onclick = () => openChat(partner, match.partnerId);
+                        listContainer.appendChild(el);
+                    }
+
+                }
+
+                catch (e) {
+                    console.error(e);
+                    listContainer.innerHTML = '<div class="error">Error loading chats</div>';
+                }
+            }
+
+            function openChat(partner, partnerId) {
+                const win = document.getElementById('chat-window');
+                const currentUser = auth.currentUser;
+
+                // UI Setup
+                // UI Setup
+                win.innerHTML = `
+                    <div style="padding: 15px; border-bottom: 1px solid var(--border-glass); background: rgba(0,0,0,0.1);">
+                        <strong>${partner.name}</strong>
+                    </div>
+                    <div id="messages-area" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                        <div class="loading">Loading conversation...</div>
+                    </div>
+                    <div style="padding: 15px; border-top: 1px solid var(--border-glass); display: flex; gap: 10px;">
+                        <input type="text" id="msg-input" placeholder="Type a message..." style="flex: 1; padding: 10px; border-radius: 20px; border: none; background: rgba(255,255,255,0.1); color: inherit;">
+                        <button id="send-btn" class="btn-primary" style="border-radius: 20px; padding: 0 20px;">Send</button>
+                    </div>`;
+
+                // Adjust styles for transparency - REMOVED to match Team page opaque style
+                // win.style.background = "rgba(255, 255, 255, 0.05)"; 
+                // win.style.backdropFilter = "blur(10px)";
+                win.style.justifyContent = 'flex-start';
+                win.style.alignItems = 'stretch';
+
+
+                // Generate unique chat ID (alphabetical sort of UIDs)
+                const chatId = [currentUser.uid,
+                    partnerId].sort().join('_');
+
+                // Subscribe to Messages
+                if (unsubscribe) unsubscribe();
+
+                const q = query(collection(db, "messages"),
+                    where("chatId", "==", chatId),
+                    orderBy("timestamp", "asc"));
+
+                unsubscribe = onSnapshot(q, (snapshot) => {
+                    const area = document.getElementById('messages-area');
+                    if (!area) return;
+
+                    area.innerHTML = '';
+
+                    if (snapshot.empty) {
+                        area.innerHTML = '<p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: auto;">No messages yet. Say hi!</p>';
+                    }
+
+                    else {
+                        snapshot.forEach(doc => {
+                            const msg = doc.data();
+                            const isMine = msg.senderId === currentUser.uid;
+
+                            // Format Timestamp
+                            let timeStr = '';
+                            if (msg.timestamp && msg.timestamp.toDate) {
+                                timeStr = msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            }
+
+                            // Create Bubble with Classes instead of inline styles for better theme support
+                            const bubble = document.createElement('div');
+                            bubble.className = isMine ? 'chat-bubble sent' : 'chat-bubble received';
+
+                            // Message Text
+                            const textSpan = document.createElement('span');
+                            textSpan.textContent = msg.text;
+
+                            // Timestamp Span
+                            const timeSpan = document.createElement('span');
+                            timeSpan.className = 'chat-time';
+                            timeSpan.textContent = timeStr;
+
+                            bubble.appendChild(textSpan);
+                            if (timeStr) bubble.appendChild(timeSpan);
+
+                            area.appendChild(bubble);
+                        });
+                        // Auto scroll to bottom
+                        area.scrollTop = area.scrollHeight;
+                    }
+                }
+
+                    , (error) => {
+                        console.error("Chat load error:", error);
+                        const area = document.getElementById('messages-area');
+
+                        if (area) {
+                            if (error.code === 'failed-precondition') {
+                                area.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff4444;">Database Index Missing.<br>Check console for link.</div>';
+                            }
+
+                            else {
+                                area.innerHTML = '<div class="error">Error loading messages.</div>';
+                            }
+                        }
+                    });
+
+                // Send Logic
+                const sendBtn = document.getElementById('send-btn');
+                const input = document.getElementById('msg-input');
+
+                const sendMessage = async () => {
+                    const text = input.value.trim();
+                    if (!text) return;
+
+                    input.value = ''; // Clear early
+
+                    try {
+                        await addDoc(collection(db, "messages"), {
+                            chatId: chatId,
+                            senderId: currentUser.uid,
+                            receiverId: partnerId,
+                            text: text,
+                            timestamp: serverTimestamp()
+                        });
+                    }
+
+                    catch (e) {
+                        console.error("Send failed", e);
+                        alert("Failed to send message");
+                    }
+                }
+
+                    ;
+
+                sendBtn.onclick = sendMessage;
+
+                input.onkeypress = (e) => {
+                    if (e.key === 'Enter') sendMessage();
+                }
+
+                    ;
+            }
+
+            loadChats();
+
+        </script>
+        <script type="module">import {
+                Hyperspeed,
+                hyperspeedPresets
+            }
+
+                from './assets/js/Hyperspeed.js';
+            const container = document.getElementById('lights');
+            const options = hyperspeedPresets.two; // different preset
+            const hyperspeed = new Hyperspeed(container, options);
+        </script>
+</body>
+
+</html>

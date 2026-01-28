@@ -21,10 +21,29 @@
         {
             "imports": {
                 "three": "https://esm.sh/three@0.160.0",
-                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three"
+                "postprocessing": "https://esm.sh/postprocessing@6.34.0?external=three",
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+                "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
             }
         }
     </script>
+    <script type="module" src="assets/js/firebase.js"></script>
+    <style>
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .profile-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -43,6 +62,8 @@
                     <li><a href="hackathons.html">Hackathons</a></li>
                     <li><a href="winners.html">Winners</a></li>
                     <li><a href="team.html">Team</a></li>
+                    <li><a href="info.html">Info</a></li>
+                    <li><a href="messages.html">Messages</a></li>
                     <li><a href="profile.html" class="active">Profile</a></li>
                 </ul>
             </nav>
@@ -56,54 +77,313 @@
     </header>
 
     <!-- Profile Section -->
-    <section class="container fade-in" style="padding-top: 120px; max-width: 800px;">
-        <div class="glass-card" style="padding: 40px;">
-            <div class="profile-header">
-                <img src="https://i.pravatar.cc/150?u=me" alt="My Profile" class="profile-avatar"
-                    style="width: 120px; height: 120px;">
-                <div>
-                    <h2 id="profile-name" style="font-size: 2rem;">Loading...</h2>
-                    <span class="text-gradient" id="profile-role" style="font-size: 1.2rem;">Loading...</span>
+    <section class="container fade-in" style="padding-top: 120px;">
+        <div class="profile-layout">
+            <div class="glass-card" style="padding: 40px;">
+                <div class="profile-header">
+                    <img src="https://i.pravatar.cc/150?u=me" alt="My Profile" class="profile-avatar"
+                        style="width: 120px; height: 120px;">
+                    <div style="flex-grow: 1;">
+                        <h2 id="profile-name" style="font-size: 2rem;">Loading...</h2>
+                        <span class="text-gradient" id="profile-role" style="font-size: 1.2rem;">Loading...</span>
+                    </div>
+                    <button id="edit-profile-btn" class="btn-glass-sm" style="height: fit-content;">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
                 </div>
+
+                <div class="profile-stats">
+                    <div class="stat-box">
+                        <h3 id="stat-hackathons">0</h3>
+                        <span>Hackathons</span>
+                    </div>
+                    <div class="stat-box">
+                        <h3 id="stat-wins">0</h3>
+                        <span>Wins</span>
+                    </div>
+                    <div class="stat-box">
+                        <h3 id="stat-projects">0</h3>
+                        <span>Projects</span>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>Skills</h3>
+                    <div class="tags" id="profile-skills">
+                        <!-- Skills -->
+                        <span style="color: var(--text-muted);">No skills listed</span>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3>Achievements</h3>
+                    <ul class="achievements-list" id="profile-achievements">
+                        <li style="color: var(--text-muted);">No achievements yet</li>
+                    </ul>
+                </div>
+
             </div>
 
-            <div class="profile-stats">
-                <div class="stat-box">
-                    <h3 id="stat-hackathons">0</h3>
-                    <span>Hackathons</span>
+            <!-- Connections Section (Separate Box) -->
+            <div class="glass-card" style="padding: 40px;">
+                <div class="profile-section">
+                    <h3>Connections</h3>
+                    <div id="connections-list"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                        <span style="color: var(--text-muted);">Loading connections...</span>
+                    </div>
                 </div>
-                <div class="stat-box">
-                    <h3 id="stat-wins">0</h3>
-                    <span>Wins</span>
-                </div>
-                <div class="stat-box">
-                    <h3 id="stat-projects">0</h3>
-                    <span>Projects</span>
-                </div>
-            </div>
-
-            <div class="profile-section">
-                <h3>Skills</h3>
-                <div class="tags" id="profile-skills">
-                    <!-- Skills -->
-                </div>
-            </div>
-
-            <div class="profile-section">
-                <h3>Achievements</h3>
-                <ul class="achievements-list" id="profile-achievements">
-                    <!-- Achievements -->
-                </ul>
             </div>
         </div>
     </section>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content glass-card">
+            <button class="close-modal" id="close-modal"><i class="fas fa-times"></i></button>
+            <h2 style="margin-bottom: 20px;">Edit Profile</h2>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <label for="edit-name">Display Name</label>
+                    <input type="text" id="edit-name" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-role">Role (e.g., Full Stack Dev)</label>
+                    <input type="text" id="edit-role" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-skills">Skills (comma separated)</label>
+                    <input type="text" id="edit-skills" class="form-input" placeholder="React, Node.js, Python">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Save Changes</button>
+            </form>
+        </div>
+    </div>
 
 
 
 
     <script src="assets/js/MagicBento.js"></script>
-    <script src="assets/js/data.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
+
+    <script type="module">
+        import { auth, db } from './assets/js/firebase.js';
+        import { onAuthStateChanged } from "firebase/auth";
+        import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc } from "firebase/firestore";
+
+        // Profile Management Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameEl = document.getElementById('profile-name');
+            const roleEl = document.getElementById('profile-role');
+            const skillsContainer = document.getElementById('profile-skills');
+
+            const editBtn = document.getElementById('edit-profile-btn');
+            const modal = document.getElementById('edit-modal');
+            const closeModal = document.getElementById('close-modal');
+            const form = document.getElementById('edit-profile-form');
+
+            const nameInput = document.getElementById('edit-name');
+            const roleInput = document.getElementById('edit-role');
+            const skillsInput = document.getElementById('edit-skills');
+
+            let currentUserUid = null;
+            let currentUserData = {};
+
+            // Auth Listener
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserUid = user.uid;
+                    await loadUserProfile(user.uid);
+                    await loadConnections(user.uid); // Load connections
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+
+            async function loadUserProfile(uid) {
+                try {
+                    const docSnap = await getDoc(doc(db, "users", uid));
+                    if (docSnap.exists()) {
+                        currentUserData = docSnap.data();
+                        updateUI(currentUserData);
+                    }
+                } catch (e) {
+                    console.error("Error loading profile:", e);
+                }
+            }
+
+            function updateUI(data) {
+                nameEl.textContent = data.name || "User";
+                roleEl.textContent = data.role || "Member";
+
+                // Update cards stats if available (assuming these are updated elsewhere or static for now)
+                document.getElementById('stat-hackathons').textContent = data.hackathons || 0;
+                document.getElementById('stat-wins').textContent = data.wins || 0;
+                document.getElementById('stat-projects').textContent = data.projects || 0;
+
+                // Update skills
+                if (data.skills && data.skills.length > 0) {
+                    skillsContainer.innerHTML = data.skills
+                        .map(skill => `<span class="tag">${skill.trim()}</span>`)
+                        .join('');
+                } else {
+                    skillsContainer.innerHTML = '<span style="color: var(--text-muted);">No skills listed</span>';
+                }
+            }
+
+            // Open Modal
+            editBtn.addEventListener('click', () => {
+                modal.classList.add('active');
+                nameInput.value = currentUserData.name || '';
+                roleInput.value = currentUserData.role || '';
+                skillsInput.value = (currentUserData.skills || []).join(', ');
+            });
+
+            // Close Modal
+            closeModal.addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            // Close on click outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+
+            // Save Changes
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                if (!currentUserUid) return;
+
+                const newName = nameInput.value;
+                const newRole = roleInput.value;
+                const newSkills = skillsInput.value.split(',').filter(s => s.trim().length > 0).map(s => s.trim());
+
+                try {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = "Saving...";
+                    submitBtn.disabled = true;
+
+                    await updateDoc(doc(db, "users", currentUserUid), {
+                        name: newName,
+                        role: newRole,
+                        skills: newSkills,
+                        isProfileVisible: true
+                    });
+
+                    // Update local state and UI
+                    currentUserData.name = newName;
+                    currentUserData.role = newRole;
+                    currentUserData.skills = newSkills;
+
+                    updateUI(currentUserData);
+                    modal.classList.remove('active');
+
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+
+                } catch (error) {
+                    console.error("Error saving profile:", error);
+                    alert("Failed to save changes: " + error.message);
+                }
+            });
+
+            // --- Connections Logic ---
+            async function loadConnections(uid) {
+                const listContainer = document.getElementById('connections-list');
+                try {
+                    // Query for requests where user is 'from' or 'to' and status is 'accepted'
+                    const q1 = query(collection(db, "requests"), where("from", "==", uid), where("status", "==", "accepted"));
+                    const q2 = query(collection(db, "requests"), where("to", "==", uid), where("status", "==", "accepted"));
+
+                    const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+                    const matches = [];
+
+                    snap1.forEach(d => matches.push({ ...d.data(), id: d.id, partnerId: d.data().to }));
+                    snap2.forEach(d => matches.push({ ...d.data(), id: d.id, partnerId: d.data().from }));
+
+                    if (matches.length === 0) {
+                        listContainer.innerHTML = '<span style="color: var(--text-muted);">No connections yet.</span>';
+                        return;
+                    }
+
+                    listContainer.innerHTML = '';
+                    const uniquePartners = new Set();
+
+                    for (const match of matches) {
+                        if (uniquePartners.has(match.partnerId)) continue;
+                        uniquePartners.add(match.partnerId);
+
+                        const partnerSnap = await getDoc(doc(db, "users", match.partnerId));
+                        const partner = partnerSnap.exists() ? partnerSnap.data() : { name: "Unknown User" };
+                        const avatar = partner.avatar || `https://i.pravatar.cc/150?u=${match.partnerId}`;
+
+                        const card = document.createElement('div');
+                        card.style.cssText = `
+                            background: rgba(255,255,255,0.05);
+                            border: 1px solid var(--border-glass);
+                            border-radius: 10px;
+                            padding: 15px;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                        `;
+
+                        card.innerHTML = `
+                            <img src="${avatar}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                            <div style="flex: 1; min-width: 0;">
+                                <h4 style="margin: 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${partner.name}</h4>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">${partner.role || 'Member'}</span>
+                            </div>
+                            <button class="remove-btn" data-id="${match.id}" style="
+                                background: rgba(255, 50, 50, 0.1); 
+                                color: #ff4444; 
+                                border: none; 
+                                border-radius: 5px; 
+                                padding: 5px 10px; 
+                                cursor: pointer; 
+                                font-size: 0.8rem;
+                                transition: all 0.2s;
+                            " title="Remove Connection">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        `;
+
+                        // Add event listener for remove button
+                        const btn = card.querySelector('.remove-btn');
+                        btn.onclick = async () => {
+                            if (confirm(`Are you sure you want to remove ${partner.name} from connections?`)) {
+                                await removeConnection(match.id, card);
+                            }
+                        };
+
+                        listContainer.appendChild(card);
+                    }
+
+                } catch (e) {
+                    console.error("Error loading connections:", e);
+                    listContainer.innerHTML = '<span style="color: var(--text-muted);">Error loading connections.</span>';
+                }
+            }
+
+            async function removeConnection(requestId, cardElement) {
+                try {
+                    await deleteDoc(doc(db, "requests", requestId));
+                    cardElement.remove();
+
+                    // Check if empty
+                    const listContainer = document.getElementById('connections-list');
+                    if (listContainer.children.length === 0) {
+                        listContainer.innerHTML = '<span style="color: var(--text-muted);">No connections yet.</span>';
+                    }
+                } catch (e) {
+                    console.error("Error removing connection:", e);
+                    alert("Failed to remove connection.");
+                }
+            }
+        });
+    </script>
 
     <script type="module">
         import { Hyperspeed, hyperspeedPresets } from './assets/js/Hyperspeed.js';

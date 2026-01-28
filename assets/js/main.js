@@ -1,8 +1,26 @@
-// Imports removed for global scope compatibility
+import { auth, db } from './firebase.js';
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, getDocs, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 
 // Main Logic
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log("HackPulse Initialized");
+
+    // Auth State Listener
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            console.log("User is signed in:", user.uid);
+            await loadUserProfile(user.uid);
+        } else {
+            console.log("User is signed out");
+            // Redirect to login if not on a public page (or if we want to enforce login for index)
+            // For this app, let's enforce login for index.html as well since it was the original intent
+            const path = window.location.pathname;
+            if (!path.includes('login.html') && !path.includes('signup.html')) {
+                window.location.href = 'login.html';
+            }
+        }
+    });
 
     // Theme Logic
     const initTheme = () => {
@@ -37,48 +55,187 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Smooth scrolling for anchor links removed for multi-page nav
+    // Initialize Data
+    await initializeData();
+});
 
-    // Render Hackathons if grid exists
+async function initializeData() {
+    // Hackathons
+    // Hackathons
+    /* 
     const hackathonGrid = document.getElementById('hackathons-grid');
     if (hackathonGrid) {
+        let hackathons = await fetchData('hackathons');
+        if (hackathons.length === 0) {
+            console.log("Seeding Hackathons...");
+            await seedHackathons();
+            hackathons = await fetchData('hackathons');
+        }
         renderHackathons(hackathons);
-        // Apply Magic Bento Spotlight
         initGlobalSpotlight(hackathonGrid, { glowColor: '132, 0, 255' });
-    }
 
-    // Render Winners if grid exists
+        // Filter Logic
+        setupFilters(hackathons);
+    }
+    */
+
+    // Winners
+    // Winners logic is now handled by hackathonService.js (Groq API)
+    /*
     const winnersGrid = document.getElementById('winners-grid');
     if (winnersGrid) {
+        let winners = await fetchData('winners');
+        if (winners.length === 0) {
+            console.log("Seeding Winners...");
+            await seedWinners();
+            winners = await fetchData('winners');
+        }
         renderWinners(winners);
-        initGlobalSpotlight(winnersGrid, { glowColor: '255, 215, 0' }); // Gold for winners
+        initGlobalSpotlight(winnersGrid, { glowColor: '255, 215, 0' });
     }
+    */
 
-    // Render Team Requests if grid exists
+    // Team Requests
+    /*
     const teamGrid = document.getElementById('team-grid');
     if (teamGrid) {
+        let teamRequests = await fetchData('teamRequests');
+        if (teamRequests.length === 0) {
+            console.log("Seeding Team Requests...");
+            await seedTeamRequests();
+            teamRequests = await fetchData('teamRequests');
+        }
         renderTeamRequests(teamRequests);
-        initGlobalSpotlight(teamGrid, { glowColor: '0, 255, 136' }); // Green for team
+        initGlobalSpotlight(teamGrid, { glowColor: '0, 255, 136' });
     }
+    */
+}
 
-    // Render Profile if elements exist (moved from modal to page)
+async function fetchData(collectionName) {
+    try {
+        const querySnapshot = await getDocs(collection(db, collectionName));
+        const data = [];
+        querySnapshot.forEach((doc) => {
+            data.push({ id: doc.id, ...doc.data() });
+        });
+        return data;
+    } catch (error) {
+        console.error(`Error fetching ${collectionName}:`, error);
+        return [];
+    }
+}
+
+// Seeding Functions (Run only if empty)
+async function seedHackathons() {
+    const data = [
+        {
+            title: "InnovateX 2026",
+            organizer: "TechCorp Inc.",
+            date: "Feb 15 - 17, 2026",
+            mode: "Online",
+            image: "https://images.unsplash.com/photo-1504384308090-c54be3855485?auto=format&fit=crop&q=80&w=600",
+            tags: ["AI", "Blockchain"],
+            deadline: "2026-02-10T23:59:59"
+        },
+        {
+            title: "CodeSprint Global",
+            organizer: "DevCommunity",
+            date: "Mar 05 - 07, 2026",
+            mode: "Offline - NYC",
+            image: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&q=80&w=600",
+            tags: ["Web", "Cloud"],
+            deadline: "2026-03-01T23:59:59"
+        },
+        {
+            title: "Hack The Future",
+            organizer: "University of Tech",
+            date: "Mar 20 - 22, 2026",
+            mode: "Hybrid",
+            image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?auto=format&fit=crop&q=80&w=600",
+            tags: ["IoT", "GreenTech"],
+            deadline: "2026-03-15T23:59:59"
+        }
+    ];
+    for (const item of data) {
+        await setDoc(doc(collection(db, "hackathons")), item);
+    }
+}
+
+async function seedWinners() {
+    const data = [
+        {
+            teamName: "Neural Ninjas",
+            project: "AI Health Assistant",
+            members: ["Alex", "Sam", "Jordan"],
+            image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=600",
+            repo: "#",
+            demo: "#"
+        },
+        {
+            teamName: "BlockChain Gang",
+            project: "Decentralized Vote",
+            members: ["Chris", "Pat", "Taylor"],
+            image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80&w=600",
+            repo: "#",
+            demo: "#"
+        }
+    ];
+    for (const item of data) {
+        await setDoc(doc(collection(db, "winners")), item);
+    }
+}
+
+async function seedTeamRequests() {
+    const data = [
+        {
+            user: "Sarah Chen",
+            role: "Frontend Dev",
+            lookingFor: ["Backend", "UI/UX"],
+            event: "InnovateX 2026",
+            skills: ["React", "Tailwind"],
+            avatar: "https://i.pravatar.cc/150?u=sarah"
+        },
+        {
+            user: "Mike Ross",
+            role: "Full Stack",
+            lookingFor: ["AI/ML Engineer"],
+            event: "CodeSprint Global",
+            skills: ["Node.js", "Python"],
+            avatar: "" // Placeholder
+        }
+    ];
+    for (const item of data) {
+        await setDoc(doc(collection(db, "teamRequests")), item);
+    }
+}
+
+
+async function loadUserProfile(uid) {
     const profileName = document.getElementById('profile-name');
-    if (profileName) {
-        renderProfile();
-        const profileStats = document.querySelector('.profile-stats');
-        if (profileStats) initGlobalSpotlight(profileStats, { glowColor: '0, 150, 255' });
-    }
+    if (!profileName) return;
 
-    // Filter Logic
+    try {
+        const docRef = doc(db, "users", uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const userData = docSnap.data();
+            renderProfile(userData);
+        } else {
+            console.log("No such user!");
+        }
+    } catch (e) {
+        console.error("Error loading profile:", e);
+    }
+}
+
+function setupFilters(hackathons) {
     const filterBtns = document.querySelectorAll('.filter-btn');
     if (filterBtns.length > 0) {
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Remove active class from all
                 filterBtns.forEach(b => b.classList.remove('active'));
-                // Add active to clicked
                 btn.classList.add('active');
-
                 const filterValue = btn.getAttribute('data-filter');
 
                 if (filterValue === 'all') {
@@ -93,25 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+}
 
-    // Scroll Indicator Logic
-    const scrollIndicator = document.querySelector('.scroll-indicator');
-    if (scrollIndicator) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 100) {
-                scrollIndicator.style.opacity = '0';
-                scrollIndicator.style.pointerEvents = 'none';
-            } else {
-                scrollIndicator.style.opacity = '0.8';
-                scrollIndicator.style.pointerEvents = 'all';
-            }
-        });
-    }
-});
 
 function renderHackathons(data) {
     const grid = document.getElementById('hackathons-grid');
     if (!grid) return;
+
+    if (data.length === 0) {
+        grid.innerHTML = '<p>No hackathons found.</p>';
+        return;
+    }
 
     grid.innerHTML = data.map(hack => `
         <div class="glass-card hackathon-card fade-in" style="position: relative; overflow: hidden;">
@@ -128,7 +277,7 @@ function renderHackathons(data) {
                     <i class="far fa-clock"></i> Loading...
                 </div>
                 <div class="tags">
-                    ${hack.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    ${hack.tags ? hack.tags.map(tag => `<span class="tag">${tag}</span>`).join('') : ''}
                 </div>
                 <button class="btn-primary" style="width: 100%; margin-top: auto;">Apply Now</button>
             </div>
@@ -138,17 +287,18 @@ function renderHackathons(data) {
     // Apply Magic Bento Effects
     const cards = grid.querySelectorAll('.hackathon-card');
     cards.forEach(card => {
-        attachBentoEffect(card, {
-            enableStars: true,
-            enableTilt: true,
-            clickEffect: true,
-            enableMagnetism: true,
-            glowColor: '132, 0, 255', // Purple
-            enableBorderGlow: true
-        });
+        if (window.attachBentoEffect) {
+            attachBentoEffect(card, {
+                enableStars: true,
+                enableTilt: true,
+                clickEffect: true,
+                enableMagnetism: true,
+                glowColor: '132, 0, 255', // Purple
+                enableBorderGlow: true
+            });
+        }
     });
 
-    // Start timers after rendering
     startCountdowns(data);
 }
 
@@ -173,16 +323,17 @@ function renderWinners(data) {
         </div>
     `).join('');
 
-    // Apply Magic Bento Effects
     const cards = grid.querySelectorAll('.winner-card');
     cards.forEach(card => {
-        attachBentoEffect(card, {
-            enableStars: true,
-            enableTilt: true,
-            clickEffect: true,
-            enableMagnetism: true,
-            glowColor: '255, 215, 0' // Gold
-        });
+        if (window.attachBentoEffect) {
+            attachBentoEffect(card, {
+                enableStars: true,
+                enableTilt: true,
+                clickEffect: true,
+                enableMagnetism: true,
+                glowColor: '255, 215, 0' // Gold
+            });
+        }
     });
 }
 
@@ -192,7 +343,7 @@ function renderTeamRequests(data) {
 
     grid.innerHTML = data.map(req => `
         <div class="glass-card team-card fade-in" style="position: relative; overflow: hidden;">
-            <img src="${req.avatar}" alt="${req.user}" class="user-avatar">
+            <img src="${req.avatar || 'https://via.placeholder.com/150'}" alt="${req.user}" class="user-avatar">
             <div class="team-info">
                 <h3>${req.user}</h3>
                 <span class="role-badge">${req.role}</span>
@@ -204,20 +355,48 @@ function renderTeamRequests(data) {
         </div>
     `).join('');
 
-    // Apply Magic Bento Effects
     const cards = grid.querySelectorAll('.team-card');
     cards.forEach(card => {
-        attachBentoEffect(card, {
-            enableStars: true,
-            enableTilt: true,
-            clickEffect: true,
-            enableMagnetism: true,
-            glowColor: '0, 255, 136' // Green
-        });
+        if (window.attachBentoEffect) {
+            attachBentoEffect(card, {
+                enableStars: true,
+                enableTilt: true,
+                clickEffect: true,
+                enableMagnetism: true,
+                glowColor: '0, 255, 136' // Green
+            });
+        }
     });
 }
 
-// Countdown Logic
+function renderProfile(currentUser) {
+    const nameEl = document.getElementById('profile-name');
+    if (!nameEl) return;
+
+    nameEl.textContent = currentUser.name || "User";
+    document.getElementById('profile-role').textContent = currentUser.role || "Member";
+    document.getElementById('stat-hackathons').textContent = currentUser.hackathons || 0;
+    document.getElementById('stat-wins').textContent = currentUser.wins || 0;
+    document.getElementById('stat-projects').textContent = currentUser.projects || 0;
+
+    const skillsContainer = document.getElementById('profile-skills');
+    if (currentUser.skills && currentUser.skills.length > 0) {
+        skillsContainer.innerHTML = currentUser.skills
+            .map(skill => `<span class="tag">${skill}</span>`).join('');
+    } else {
+        skillsContainer.innerHTML = '<span class="text-muted">No skills listed</span>';
+    }
+
+    const achievementsContainer = document.getElementById('profile-achievements');
+    if (currentUser.achievements && currentUser.achievements.length > 0) {
+        achievementsContainer.innerHTML = currentUser.achievements
+            .map(ach => `<li><i class="fas fa-crown"></i> ${ach}</li>`).join('');
+    } else {
+        achievementsContainer.innerHTML = '<li class="text-muted">No achievements yet</li>';
+    }
+}
+
+
 function startCountdowns(hackathons) {
     setInterval(() => {
         hackathons.forEach(hack => {
@@ -240,21 +419,4 @@ function startCountdowns(hackathons) {
             }
         });
     }, 1000);
-}
-
-function renderProfile() {
-    const nameEl = document.getElementById('profile-name');
-    if (!nameEl) return;
-
-    nameEl.textContent = currentUser.name;
-    document.getElementById('profile-role').textContent = currentUser.role;
-    document.getElementById('stat-hackathons').textContent = currentUser.hackathons;
-    document.getElementById('stat-wins').textContent = currentUser.wins;
-    document.getElementById('stat-projects').textContent = currentUser.projects;
-
-    document.getElementById('profile-skills').innerHTML = currentUser.skills
-        .map(skill => `<span class="tag">${skill}</span>`).join('');
-
-    document.getElementById('profile-achievements').innerHTML = currentUser.achievements
-        .map(ach => `<li><i class="fas fa-crown"></i> ${ach}</li>`).join('');
 }

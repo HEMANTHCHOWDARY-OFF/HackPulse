@@ -11,6 +11,17 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+<script type="importmap">
+      {
+        "imports": {
+          "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+          "firebase/analytics": "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+          "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"
+        }
+      }
+    </script>
+<script type="module" src="assets/js/firebase.js"></script>
 
 <body>
     <div id="liquid-ether-bg"
@@ -81,12 +92,61 @@
     </script>
 
     <!-- Auth Logic -->
-    <script>
-        document.getElementById('signupForm').addEventListener('submit', function (e) {
+    <script type="module">
+        import { auth, db } from './assets/js/firebase.js';
+        import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+        import { doc, setDoc } from "firebase/firestore";
+
+        document.getElementById('signupForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            // Simulate successful signup
-            sessionStorage.setItem('authToken', 'true');
-            window.location.href = 'index.html';
+
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating Account...';
+
+                // Create Authentication User
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Update Auth Profile
+                await updateProfile(user, {
+                    displayName: fullname
+                });
+
+                // Create User Document in Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    name: fullname,
+                    email: email,
+                    role: "User", // Default role
+                    createdAt: new Date().toISOString(),
+                    hackathons: 0,
+                    wins: 0,
+                    projects: 0,
+                    skills: [],
+                    achievements: []
+                });
+
+                console.log("Account created successfully");
+                sessionStorage.setItem('authToken', 'true'); // Keep for legacy/simple checks if needed
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error("Signup Error:", error);
+                alert(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign Up';
+            }
         });
     </script>
 </body>

@@ -62,7 +62,7 @@
 .magic-bento-card__content {
     display: flex;
     position: relative;
-    color: var(--white);
+    color: var(--text-main);
     z-index: 2;
 }
 
@@ -140,18 +140,18 @@
         grid-template-columns: repeat(4, 1fr);
     }
 
-    /* Grid layout adjustments */
-    .magic-bento-card:nth-child(3) {
+    /* Grid layout adjustments - Scoped to .card-grid only */
+    .card-grid .magic-bento-card:nth-child(3) {
         grid-column: span 2;
         grid-row: span 2;
     }
 
-    .magic-bento-card:nth-child(4) {
+    .card-grid .magic-bento-card:nth-child(4) {
         grid-column: 1 / span 2;
         grid-row: 2 / span 2;
     }
 
-    .magic-bento-card:nth-child(6) {
+    .card-grid .magic-bento-card:nth-child(6) {
         grid-column: 4;
         grid-row: 3;
     }
@@ -237,34 +237,42 @@
 /* Card Images */
 .magic-bento-card__image {
     position: absolute;
-    bottom: -20px;
-    right: -20px;
-    width: 250px;
-    height: 250px;
+    bottom: -10%;
+    right: -10%;
+    width: 60%;
+    height: 60%;
+    max-width: none !important;
     object-fit: contain;
-    opacity: 0.6;
-    transform: rotate(-15deg);
-    transition: all 0.5s ease;
+    opacity: 0.8;
+    transform: rotate(0deg) scale(0.9);
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 1;
     filter: drop-shadow(0 0 10px rgba(132, 0, 255, 0.3));
     pointer-events: none;
 }
 
 .magic-bento-card:hover .magic-bento-card__image {
-    transform: rotate(0deg) scale(1.1);
-    opacity: 0.9;
-    bottom: -10px;
-    right: -10px;
+    transform: rotate(-10deg) scale(1.1);
+    opacity: 1;
+    bottom: 5%;
+    right: 5%;
 }
 
-/* Larger images for large cards */
+/* Larger images for large cards - adjust positioning but keep responsive sizing */
 @media (min-width: 1024px) {
 
     .magic-bento-card:nth-child(3) .magic-bento-card__image,
     .magic-bento-card:nth-child(4) .magic-bento-card__image {
-        width: 400px;
-        height: 400px;
-        bottom: -40px;
-        right: -40px;
+        width: 70%;
+        height: 80%;
+        bottom: -5%;
+        right: -5%;
+    }
+
+    .magic-bento-card:nth-child(3):hover .magic-bento-card__image,
+    .magic-bento-card:nth-child(4):hover .magic-bento-card__image {
+        bottom: 5%;
+        right: 5%;
+        transform: rotate(-10deg) scale(1.1);
     }
 }
