@@ -79,7 +79,7 @@ export async function loadTeamMembers() {
         }
 
         // 2. Fetch users from Firestore
-        const qUsers = query(collection(db, "users"), where("isProfileVisible", "==", true));
+        const qUsers = query(collection(db, "users"));
         const querySnapshot = await getDocs(qUsers);
         allUsers = [];
 
